@@ -9,31 +9,15 @@ const app = express();
 //middleware
 app.use(cors());
 app.use(express.json());
-
-app.use('/', userRoutes);
-app.get('/', (request, response) => {
-    response.send("list of all users");
+//ask later on why we getting favIcon.ico
+app.use((request, response, next) => {
+    const timeStamp = new Date().toISOString();
+    console.log(`[${timeStamp}] ${request.method} ${request.url}`);
+    next();
 })
 
-app.get('/:id', (request, response) => {
-    const id = request.params.id;
-    response.send("This car with id ", id);
-})
+app.use('/api/users', userRoutes);
 
-app.post('/', (request, response) => {
-    const {carName} = request.body;
-    response.send("successfully created ", carName);
-})
 
-app.put('/:id', (request, response) => {
-    const {carName} = request.body;
-    response.send("successfully updated ", carName);
-})
-
-app.delete('/:id', (request, response) => {
-    const id = request.params.id;
-    //some query
-    response.send("Car with the id of id is deleted", id);
-})
 
 module.exports = app;
