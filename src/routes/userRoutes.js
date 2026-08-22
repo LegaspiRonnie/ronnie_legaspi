@@ -1,6 +1,6 @@
 const express = require('express');
+const pool = reauire('../config/db');
 const router = express.Router();
-const pool = require('../config/db');
 const users = [
     {
         id: 1,
@@ -22,48 +22,88 @@ const users = [
     },
 ]
 
-router.get('/', (request, response) => {
-    
-    response.json(users);
-})
-
-router.get('/:id', (request, response) => {
-    const id = Number(request.params.id);
-    const result = users.filter((u) => u.id === id);
-    response.json(result[0]);
-})
-
-router.post('/', (request, response) => {
-    const { id, username, email, age } = request.body;
-    const newUser = {
-        id: id,
-        username: username, 
-        email: email,
-        age: age
+router.get('/', async (request, response) => {
+    try {
+        response.status(200).json(users);
+    } catch (err) {
+        console.error('Failed to fetch users:', err);
+        response.status(500).json({ message: 'Internal server error' });
     }
-    users.push(newUser);
-    console.log(users);
-    response.json({"successfully created ": newUser});
 })
 
-router.put('/:id', (request, response) => {
-    const id = Number(request.params.id);
-    const { username, email, age } = request.body;
-    const newUser = {
-        id: id,
-        username: username, 
-        email: email,
-        age: age
+router.get('/:id', async (request, response) => {
+    try {
+        const id = Number(request.params.id);
+        const user = users.find((user) => user.id === id);
+
+        if (!user) {
+            return response.status(404).json({ message: 'User not found' });
+        }
+
+        response.json(user);
+    } catch (err) {
+        console.error('Failed to fetch user:', err);
+        response.status(500).json({ message: 'Internal server error' });
     }
-    users.push(newUser);
-    console.log(users);
-    response.json({"successfully created ": newUser});
 })
 
-router.delete('/:id', (request, response) => {
-    const id = request.params.id;
-    //some query
-    response.send("Car with the id of id is deleted", id);
+router.post('/', async (request, response) => {
+    try {
+        const { id, username, email, age } = request.body;
+        const newUser = {
+            id: id,
+            username: username, 
+            email: email,
+            age: age
+        }
+        users.push(newUser);
+        response.status(201).json({ message: 'User created successfully', user: newUser });
+    } catch (err) {
+        console.error('Failed to create user:', err);
+        response.status(500).json({ message: 'Internal server error' });
+    }
+})
+
+router.put('/:id', async (request, response) => {
+    try {
+        const id = Number(request.params.id);
+        const { username, email, age } = request.body;
+        const userIndex = users.findIndex((user) => user.id === id);
+
+        if (userIndex === -1) {
+            return response.status(404).json({ message: 'User not found' });
+        }
+
+        const updatedUser = {
+            id: id,
+            username: username,
+            email: email,
+            age: age
+        };
+
+        users[userIndex] = updatedUser;
+        response.json({ message: 'User updated successfully', user: updatedUser });
+    } catch (err) {
+        console.error('Failed to update user:', err);
+        response.status(500).json({ message: 'Internal server error' });
+    }
+})
+
+router.delete('/:id', async (request, response) => {
+    try {
+        const id = Number(request.params.id);
+        const userIndex = users.findIndex((u) => u.id === id);
+
+        if (userIndex === -1) {
+            return response.status(404).json({ message: 'User not found' });
+        }
+
+        users.splice(userIndex, 1);
+        response.status(200).json({ message: 'User deleted successfully' });
+    } catch (err) {
+        console.error('Failed to delete user:', err);
+        response.status(500).json({ message: 'Internal server error' });
+    }
 })
 
 module.exports = router;
