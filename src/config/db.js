@@ -1,13 +1,13 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 const { Pool } = require('pg');
 
-
 const pool = new Pool({
-    user:     process.env.DB_USER,
-    host:     process.env.DB_HOST,
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
-    port:     process.env.DB_PORT
+    port: Number(process.env.DB_PORT),
 });
 
 const testConnection = async () => {
@@ -16,11 +16,11 @@ const testConnection = async () => {
         await client.query('SELECT 1');
         console.log('Database connected');
         client.release();
+        return true;
     } catch (err) {
         console.error('Cannot connect to the database:', err.message);
+        return false;
     }
 };
 
-testConnection();
-
-module.exports = pool;
+module.exports = { pool, testConnection };
