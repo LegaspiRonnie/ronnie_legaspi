@@ -1,5 +1,5 @@
 const express = require('express');
-const pool = reauire('../config/db');
+const { pool } = require('../config/db');
 const router = express.Router();
 const users = [
     {
@@ -24,10 +24,11 @@ const users = [
 
 router.get('/', async (request, response) => {
     try {
-        response.status(200).json(users);
+        const result = await pool.query('CREATE');
+        response.status(200).json(result.rows);
     } catch (err) {
         console.error('Failed to fetch users:', err);
-        response.status(500).json({ message: 'Internal server error' });
+        response.status(500).json({ message: 'Internal server error', error: err });
     }
 })
 
